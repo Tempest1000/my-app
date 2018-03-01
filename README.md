@@ -181,15 +181,73 @@ renderSquare(i) {
 }
 ```
 
+### Components
+
+The most simple way to create a component is with a javascript function:
+
+```javascript
+function Welcome(props) {
+  return <h1>Hello, {props.name}<h1>;
+}
+```
+
+This is called a "functional" component because it is just a function. 
+
+Stateless functional components are dumb presentation components with no state.
+
+With ES6 classes a class can be used to define a component (note the use of this):
+
+```javascript
+class Welcome extends React.Component {
+  render() {
+    return <h1>Hello, {this.props.name}<h1>;
+  }
+}
+```
+
+### Functions vs Classes
+
+Classes have additional features over functionality components, namely Local State and Lifecycle methods.
+
+Local state is initialized in the constructor.
+
+To convert a function to a class the following must be done:
+
+1. Extend with React.Component
+2. Add a render() method
+3. Move function body into render() method
+4. Replace props with this.props in render() body
+
+When something is rendered to the DOM for the first time this is called "mounting" in React.
+
+A special method named componentDidMount() can be called after the component is rendered.
+
+This methods are called "lifecycle hooks" in React.
+
 ### State vs Props
 
-State is used in the component to create values that can be changed in that component.
+Props are read-only ... a function or a class must never modify its own props. 
+
+State is used in the component to create values that can be changed in that component. State allows React components to change their output over time in response to user actions, network responses, etc. State is private and fully controlled by the component. State is only available to classes.
 
 Props are used to pass values from a one component down to another ... in a parent child relationship. 
 
+React elements can represent DOM tags (div, p, input, etc) or user-defined components:
+
+```javascript
+const element = <div />;
+const element = <Welcome name="Test" />;
+```
+
+When React sees a user-defined components it passes JSX attributes to this component as a single object, this object is called "props".
+
+React calls the ```Welcome``` component with {name: 'Test'} as the props.
+
+Functions in React are valid React components if they accept a single "props" (which stands for properties), the function must also return a React element.
+
 Usually state from one component is passed as props to another.
 
-Note when setting state you cannot do this: 
+Note when setting state you cannot do this (this will no re-render the component):
 
 ```javascript
 this.state.value = this.props.value
@@ -200,6 +258,42 @@ You must use the setState method of the this context:
 ```javascript
 this.setState({value: this.props.value})
 ```
+
+setState can also take a function as a argument like this:
+
+```javascript
+this.setState((prevState, props) => ({
+  counter: prevState.counter + props.increment
+}));
+```
+
+or
+
+```javascript
+this.setState(function(prevState, props) {
+  return {
+    counter: prevState.counter + props.increment
+  };
+});
+```
+
+setState also merges the object provided into the current state.
+
+For this state:
+
+```javascript
+  constructor(props) {
+    super(props);
+    this.state = {
+      posts: [],
+      comments: []
+    };
+  }
+```
+
+Calling ```this.setState({posts: response.posts}) will merge posts into the local state and leave comments intact.
+
+This is used when act with state and props together.
 
 The full code would look like this.
 
@@ -256,3 +350,10 @@ class Square extends React.Component {
   }
 }
 ```
+
+## Lifting State Up
+
+Need squares in one place. Store state in the board.
+
+When refactoring note the difference between ```onClick={props.onClick}``` which passes the function down versus ```onClick={props.onClick()}``` which would call onClick immediately (and break everything).
+
