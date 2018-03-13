@@ -247,7 +247,7 @@ Functions in React are valid React components if they accept a single "props" (w
 
 Usually state from one component is passed as props to another.
 
-Note when setting state you cannot do this (this will no re-render the component):
+Note when setting state you cannot do this (this will not re-render the component):
 
 ```javascript
 this.state.value = this.props.value
@@ -356,4 +356,248 @@ class Square extends React.Component {
 Need squares in one place. Store state in the board.
 
 When refactoring note the difference between ```onClick={props.onClick}``` which passes the function down versus ```onClick={props.onClick()}``` which would call onClick immediately (and break everything).
+
+## Dealing with Functions
+
+Calling a function:
+
+Explicit bind needed with ES6 if using class (smart component)
+
+onClick={this.onClickHandler.bind(this)} // binding in the render method ... this causes the "this" context to be the React component (class or function that the event handler is in), in the example above this.props.value would fail without the binding
+
+I think this is only needed if you are going to be using the this context in the event handler ... like this.props.something
+
+If using stateless functional component ... const Square = ({onClickHandler}) => {
+... some other code ...
+onClick={onClickHandler}
+
+**Unless there are parameters ... then have to use something like this:
+onClick={onDelete.bind(this, course.id)}
+
+**This will not work:
+
+onClick={() => onDelete(course.id)}
+
+When using a React smart components and the component has a parameter:
+
+onClick={() => this.onClickHandler("test")}
+
+Can also do this, I have no idea why this works:
+
+onClick={this.handleClick.bind(this, i)}
+
+From other redux docs:
+
+ReactJs gotcha ... the "this" context in our change handler is wrong.
+In the first line "this" context is the caller not the React component. 
+The "this" context is the input (textbox), not the component.
+
+To fix the problem bind to the "this" context in the constructor.
+
+```javascript
+    onTitleChange(event) {
+        const course = this.state.course; // note: "this" here is wrong ... the "this" context here is the caller (form control)
+        course.title = event.target.value; // the event passed is the title change with the value being the payload
+        this.setState({course: course});
+    }
+
+Can also have this in the ctor of the React component:
+
+this.onTitleChange = this.onTitleChange.bind(this);
+... and then this in the render code: onClick={this.onTitleChange}
+
+
+Don't use this outside of the component if you can help it.
+
+When inside a block of html like this would do a bind ... that is because in a stateless functional component the this has no meaning
+
+```
+<td><Link to="/courses" onClick={onDelete.bind(this, course.id)}>Delete</Link></td>
+<td><a href={course.watchHref} target="_blank">Watch</a></td>
+<td><Link to={`/course/${course.id}`}>{course.title}</Link></td>
+<td>{course.authorId}</td>
+<td>{course.category}</td>
+<td>{course.length}</td>
+```
+
+When adding to a component do this to automatically bind it:
+
+```
+deleteCourse = (id, event) => {
+    event.preventDefault();
+```
+
+Then you don't need to do this in the ctor:
+
+```
+this.deleteCourse = this.deleteCourse.bind(this);
+```
+
+Component example
+
+```
+class Counter extends React.Component {
+  
+  test = () => {
+    console.log(this.props.name);
+  }
+  
+  render() {
+    return (
+      <div>
+      <h1> { store.getState() }</h1>
+       <button
+        onClick={ this.test }
+       >Increment</button>
+      </div>
+    );
+  }
+}
+```
+
+Could also do this:
+
+```
+() => this.test
+```
+
+When moving the function outside of the component and refering to props in the function you must have an explicit bind.
+
+```
+  function test() {
+    console.log(this.props.name);
+  }
+```
+
+Doing this won't work, this is because using the fat arrow syntax you are creating a new function that has a .bind called on it, but it doesn't bind the contents of the target (the test function outside of the component).
+
+```
+onClick={ () => test() }
+```
+
+Would have to do this instead
+
+```
+onClick={test.bind(this)}
+```
+
+Long story short don't put your functions outside of your component classes.
+
+### Full example of the ways functions can be called (use JSBin):
+
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="TodoApp">
+  <meta charset="utf-8">
+  <script src="https://fb.me/react-0.14.7.min.js"></script>
+  <script src="https://fb.me/react-dom-0.14.7.min.js"></script>    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.1/redux.min.js"></script>
+  <title>React Demo</title>
+</head>
+<body>
+<div id="root"></div>
+</body>
+</html>
+```
+
+```javascript
+// same as: var createStore = Redux.createStore
+const { createStore } = Redux;
+
+const counter = (state = 0, action) => {
+  switch (action.type) {
+    case 'INCREMENT':
+      return state + 1;
+    case 'DECREMENT':
+      return state - 1;
+    default: 
+      return state;
+  }
+}
+
+const store = createStore(counter);
+
+function test3() {
+  console.log("test3")
+}
+
+function test4() {
+  console.log(this.props.name);
+}
+
+const MyStatelessFunctionalComponent = ({onTestFuncWithParam}) => {
+    return(
+      <div>
+       <button
+        onClick={ onTestFuncWithParam.bind(this, "Message from below") }
+       >Raise Message</button>
+      </div>
+    );
+};
+
+class Counter extends React.Component {
+  
+  test1() {
+    console.log("test1");
+  }
+  
+  test2(message) {
+    console.log(message);
+  }
+  
+  testFuncWithParam(message) {
+    console.log(message);
+  }
+  
+  render() {
+    return (
+      <div>
+      <h1> { store.getState() }</h1>
+       <button
+        onClick={ () => store.dispatch({ type: 'INCREMENT' }) }
+       >Increment</button>
+       <br/><br/>
+       <button
+        onClick={ this.test1 }
+       >Test Function</button>
+       <br/><br/>
+       <button
+        onClick={ () => this.test1() }
+       >Test Arrow Function</button>
+       <br/><br/>
+       <button
+        onClick={ () => this.test2("hello") }
+       >Test Arrow Function with Param</button>
+       <br/><br/>
+       <button
+        onClick={ test3 }
+       >Test External Function</button>
+       <br/><br/>
+       <button
+        onClick={ () => test3() }
+       >Test External Function with Arrows</button>
+       <br/><br/>
+       <button
+        onClick={ test4.bind(this) }
+       >Test External Function that needs this context with props</button>
+       <br/><br/>
+       <MyStatelessFunctionalComponent onTestFuncWithParam={ this.testFuncWithParam } />
+      </div>
+    );
+  }
+}
+
+const render = () => {
+  ReactDOM.render(
+    <Counter name="TheUserName" />,
+    document.getElementById('root')
+  );
+}
+
+store.subscribe(render);
+render();
+```
 
