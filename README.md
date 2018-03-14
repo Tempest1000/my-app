@@ -528,6 +528,7 @@ function test4() {
   console.log(this.props.name);
 }
 
+// note: can't use fat arrow syntax here
 const MyStatelessFunctionalComponent = ({onTestFuncWithParam}) => {
     return(
       <div>
@@ -537,6 +538,24 @@ const MyStatelessFunctionalComponent = ({onTestFuncWithParam}) => {
       </div>
     );
 };
+
+class MySmartReactComponent extends React.Component {
+  render() {
+    return (
+      <span>
+       <button
+        onClick={this.props.onTestSmartComponentFunc}
+       >Raise Message No Param</button>
+       <button
+        onClick={() => this.props.onTestSmartComponentFunc("Some message")}
+       >Raise Message With Param</button>
+       <button
+        onClick={ this.props.onTestSmartComponentFunc.bind(this, "Some message")}
+       >Raise Message With Param 2</button>
+      </span>
+    );
+  }
+}
 
 class Counter extends React.Component {
   
@@ -585,6 +604,8 @@ class Counter extends React.Component {
        >Test External Function that needs this context with props</button>
        <br/><br/>
        <MyStatelessFunctionalComponent onTestFuncWithParam={ this.testFuncWithParam } />
+       <br/>
+       <MySmartReactComponent onTestSmartComponentFunc={ this.test1 } onTestSmartComponentFunc={ this.testFuncWithParam } />
       </div>
     );
   }
