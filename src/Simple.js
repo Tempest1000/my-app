@@ -11,6 +11,7 @@ class Simple extends React.Component {
         this.onClickHandler = this.onClickHandler.bind(this);
         this.onDeleteHandler = this.onDeleteHandler.bind(this);
         this.addClickHandler = this.addClickHandler.bind(this);
+        this.onEnterHandler = this.onEnterHandler.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
     }
 
@@ -58,6 +59,19 @@ class Simple extends React.Component {
         this.setState({todos: elements});
     }
 
+    onEnterHandler(event) {
+        if (event.key === 'Enter') {
+            let maxIndex = Math.max.apply(Math, this.state.todos.map(todo => todo.index));
+
+            let elements = [
+                ...this.state.todos,
+                Object.assign({}, {index: maxIndex + 1, note: this.state.note, done: false})
+            ];
+
+            this.setState({todos: elements});
+        }
+    }
+
     onChangeHandler(event) {
         event.preventDefault();
         this.setState({note: event.target.value});
@@ -71,7 +85,7 @@ class Simple extends React.Component {
                     <h3>My To Do List</h3>
                     <br/>
                     <div className="input-group">
-                        <input type="text" className="form-control" placeholder="Add item..." onChange={this.onChangeHandler}/>
+                        <input type="text" className="form-control" placeholder="Add item..." onKeyUp={this.onEnterHandler} onChange={this.onChangeHandler}/>
                         <span className="input-group-btn">
                             <button className="btn btn-secondary" type="button" onClick={this.addClickHandler}>Go!</button>
                         </span>
