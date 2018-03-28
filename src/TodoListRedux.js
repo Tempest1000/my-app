@@ -1,10 +1,12 @@
 import React from 'react';
+import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
+import * as todoActions from "./actions/todoActions";
 
-class Simple extends React.Component {
+class TodoListRedux extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            todos: [],
             note: null
         };
 
@@ -15,10 +17,7 @@ class Simple extends React.Component {
         this.onChangeHandler = this.onChangeHandler.bind(this);
     }
 
-    componentWillMount() {
-        this.setState({todos: [{index: 0, note: "one", done: false}, {index: 1, note: "two", done: false}, {index: 2, note: "three", done: true}]});
-    }
-
+    // this marks an item as done
     onClickHandler(index) {
         let indexInArray = this.state.todos.findIndex(todo => todo.index === index);
 
@@ -36,6 +35,7 @@ class Simple extends React.Component {
         this.setState({todos: elements});
     }
 
+    // this deletes an item
     onDeleteHandler(index) {
         this.setState({deleting: true});
 
@@ -46,6 +46,7 @@ class Simple extends React.Component {
         this.setState({todos: elements});
     }
 
+    // this adds an item to the list when the add button is clicked
     addClickHandler(event) {
         event.preventDefault();
 
@@ -59,6 +60,7 @@ class Simple extends React.Component {
         this.setState({todos: elements});
     }
 
+    // this adds an item to the list when the enter button is clicked
     onEnterHandler(event) {
         if (event.key === 'Enter') {
             let maxIndex = Math.max.apply(Math, this.state.todos.map(todo => todo.index));
@@ -72,6 +74,7 @@ class Simple extends React.Component {
         }
     }
 
+    // this changes the local page state when the textbox is typed in
     onChangeHandler(event) {
         event.preventDefault();
         this.setState({note: event.target.value});
@@ -97,7 +100,7 @@ class Simple extends React.Component {
                     <tr><th></th></tr>
                     </thead>
                     <tbody>
-                    {this.state.todos.map(todo =>
+                    {this.props.todos.map(todo =>
                         todo.done ?
                             <tr><td>
                                 <span className="checked" onClick={() => this.onClickHandler(todo.index)}>{todo.note}</span>
@@ -116,6 +119,18 @@ class Simple extends React.Component {
     }
 }
 
-export default Simple;
+function mapStateToProps(state) {
+    return {
+        todos: state.todoReducer
+    };
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        actions: bindActionCreators(todoActions, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoListRedux);
 
 //export default ({}) => <h1>Test</h1>
