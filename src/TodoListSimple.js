@@ -37,8 +37,6 @@ class TodoListSimple extends React.Component {
     }
 
     onDeleteHandler(index) {
-        this.setState({deleting: true});
-
         let elements = [
             ...this.state.todos.filter(todo => todo.index !== index)
         ];
@@ -99,12 +97,12 @@ class TodoListSimple extends React.Component {
                     <tbody>
                     {this.state.todos.map(todo =>
                         todo.done ?
-                            <tr><td>
+                            <tr key={todo.index}><td>
                                 <span className="checked" onClick={() => this.onClickHandler(todo.index)}>{todo.note}</span>
                                 <span className="close" onClick={() => this.onDeleteHandler(todo.index)}>{"\u00D7"}</span>
                             </td></tr>
                             :
-                            <tr><td>
+                            <tr key={todo.index}><td>
                                 <span onClick={() => this.onClickHandler(todo.index)}>{todo.note}</span>
                                 <span className="close" onClick={() => this.onDeleteHandler(todo.index)}>{"\u00D7"}</span>
                             </td></tr>

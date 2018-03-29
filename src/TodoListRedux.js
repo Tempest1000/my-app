@@ -19,58 +19,23 @@ class TodoListRedux extends React.Component {
 
     // this marks an item as done
     onClickHandler(index) {
-        let indexInArray = this.state.todos.findIndex(todo => todo.index === index);
-
-        if (indexInArray === -1) return;
-
-        let elements = this.state.todos.slice();
-
-        let selected = elements[indexInArray];
-
-        elements[indexInArray] = selected.done ?
-            Object.assign({}, {index: selected.index, note: selected.note, done: false})
-            :
-            Object.assign({}, {index: selected.index, note: selected.note, done: true});
-
-        this.setState({todos: elements});
+        this.props.actions.updateTodoSuccess(index);
     }
 
     // this deletes an item
     onDeleteHandler(index) {
-        this.setState({deleting: true});
-
-        let elements = [
-            ...this.state.todos.filter(todo => todo.index !== index)
-        ];
-
-        this.setState({todos: elements});
+        this.props.actions.deleteTodoSuccess(index);
     }
 
     // this adds an item to the list when the add button is clicked
     addClickHandler(event) {
-        event.preventDefault();
-
-        let maxIndex = Math.max.apply(Math, this.state.todos.map(todo => todo.index));
-
-        let elements = [
-            ...this.state.todos,
-            Object.assign({}, {index: maxIndex + 1, note: this.state.note, done: false})
-        ];
-
-        this.setState({todos: elements});
+        this.props.actions.createTodoSuccess(this.state.note);
     }
 
     // this adds an item to the list when the enter button is clicked
     onEnterHandler(event) {
         if (event.key === 'Enter') {
-            let maxIndex = Math.max.apply(Math, this.state.todos.map(todo => todo.index));
-
-            let elements = [
-                ...this.state.todos,
-                Object.assign({}, {index: maxIndex + 1, note: this.state.note, done: false})
-            ];
-
-            this.setState({todos: elements});
+            this.props.actions.createTodoSuccess(this.state.note);
         }
     }
 
@@ -102,12 +67,12 @@ class TodoListRedux extends React.Component {
                     <tbody>
                     {this.props.todos.map(todo =>
                         todo.done ?
-                            <tr><td>
+                            <tr key={todo.index}><td>
                                 <span className="checked" onClick={() => this.onClickHandler(todo.index)}>{todo.note}</span>
                                 <span className="close" onClick={() => this.onDeleteHandler(todo.index)}>{"\u00D7"}</span>
                             </td></tr>
                             :
-                            <tr><td>
+                            <tr key={todo.index}><td>
                                 <span onClick={() => this.onClickHandler(todo.index)}>{todo.note}</span>
                                 <span className="close" onClick={() => this.onDeleteHandler(todo.index)}>{"\u00D7"}</span>
                             </td></tr>
