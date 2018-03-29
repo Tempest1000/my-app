@@ -58,6 +58,17 @@ class TodoListRedux extends React.Component {
                             <button className="btn btn-secondary" type="button" onClick={this.addClickHandler}>Go!</button>
                         </span>
                     </div>
+                    <br/>
+                    <div className="btn-group">
+                        <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            Filter <span className="caret"></span>
+                        </button>
+                        <ul className="dropdown-menu" role="menu">
+                            <li><a href="#">All</a></li>
+                            <li><a href="#">Pending</a></li>
+                            <li><a href="#">Complete</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <br/>
                 <table className="table table-striped">
