@@ -9,10 +9,10 @@ export function createTodoSuccess(note) {
 
 // the other way to declare the function
 /*
-export const createTodoSuccess = (todo) => {
+export const createTodoSuccess = (note) => {
     return {
         type: actionsTypes.CREATE_TODO_SUCCESS,
-        todo
+        note
     }
 };
 */
