@@ -1,18 +1,29 @@
 import React from 'react';
+import Select from 'react-select';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import * as todoActions from "./actions/todoActions";
+
+const getVisibleTodos = (todos, filter) => {
+    if (!filter) return todos;
+    if (filter.toLowerCase() === "all") return todos;
+    if (filter.toLowerCase() === "pending") return todos.filter(todo => !todo.done);
+    if (filter.toLowerCase() === "complete") return todos.filter(todo => todo.done);
+    return todos;
+};
 
 class TodoListRedux extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            note: null
+            note: null,
+            filter: null
         };
 
         this.onClickHandler = this.onClickHandler.bind(this);
         this.onDeleteHandler = this.onDeleteHandler.bind(this);
         this.addClickHandler = this.addClickHandler.bind(this);
+        this.filterChangeHandler = this.filterChangeHandler.bind(this);
         this.onEnterHandler = this.onEnterHandler.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
     }
@@ -32,6 +43,13 @@ class TodoListRedux extends React.Component {
         this.props.actions.createTodoSuccess(this.state.note);
     }
 
+    filterChangeHandler(selectedOption) {
+        //console.log("filter change: " + selectedOption.value);
+        if (!selectedOption) this.setState({filter: "All"});
+
+        if (selectedOption && selectedOption.value) this.setState({filter: selectedOption.value});
+    }
+
     // this adds an item to the list when the enter button is clicked
     onEnterHandler(event) {
         if (event.key === 'Enter') {
@@ -46,6 +64,7 @@ class TodoListRedux extends React.Component {
     }
 
     render() {
+        const test = getVisibleTodos(this.props.todos, this.state.filter);
 
         return (
             <div className="container">
@@ -59,16 +78,17 @@ class TodoListRedux extends React.Component {
                         </span>
                     </div>
                     <br/>
-                    <div className="btn-group">
-                        <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            Filter <span className="caret"></span>
-                        </button>
-                        <ul className="dropdown-menu" role="menu">
-                            <li><a href="#">All</a></li>
-                            <li><a href="#">Pending</a></li>
-                            <li><a href="#">Complete</a></li>
-                        </ul>
-                    </div>
+
+                    <Select
+                        name="form-field-name"
+                        value={this.state.filter}
+                        options={[
+                            { value: 'All', label: 'All' },
+                            { value: 'Pending', label: 'Pending' },
+                            { value: 'Complete', label: 'Complete' }
+                        ]}
+                        onChange={this.filterChangeHandler}
+                    />
                 </div>
                 <br/>
                 <table className="table table-striped">
@@ -76,7 +96,7 @@ class TodoListRedux extends React.Component {
                     <tr><th></th></tr>
                     </thead>
                     <tbody>
-                    {this.props.todos.map(todo =>
+                    {test.map(todo =>
                         todo.done ?
                             <tr key={todo.index}><td>
                                 <span className="checked" onClick={() => this.onClickHandler(todo.index)}>{todo.note}</span>
